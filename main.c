@@ -3,5 +3,6 @@
 
 int
 main (int argc, char ** argv) {
+    printf("Shell starting\n");
     return EXIT_SUCCESS;
 }
