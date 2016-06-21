@@ -4,8 +4,7 @@ void cmd_free(void *obj);
 
 typedef enum {
     PROGRAM = 0,
-    ARGUMENTS,
-} ParseState;
+    ARGUMENTS, } ParseState;
 
 Vector *
 parse_cmd(String *line) {
@@ -24,16 +23,35 @@ parse_cmd(String *line) {
     cmd->arguments = vector_init();
     for (int i = 0; i < line->len; i++) {
         char c = line->string[i];
-        if (c == ' ' && !inString && !isEscaped) {
-            if (state == PROGRAM) {
-                state = ARGUMENTS;
+        if (!inString && !isEscaped) {
+            if (c == ' ') {
+                if (state == PROGRAM && cmd->program->len) {
+                    state = ARGUMENTS;
+                }
+                if (state == ARGUMENTS) {
+                    if (cmd->arguments->count) {
+                        String *lastArgument = (String *)cmd->arguments->objs[cmd->arguments->count - 1];
+                        if (lastArgument->len == 0) {
+                            continue;
+                        }
+                    }
+                    String *s = str_init();
+                    vector_append(cmd->arguments, s);
+                    release(s);
+                }
+                continue;
             }
-            if (state == ARGUMENTS) {
-                String *s = str_init();
-                vector_append(cmd->arguments, s);
-                release(s);
+            if (c == '|') {
+                cmd = alloc(sizeof(Command), cmd_free);
+                cmd->program = str_init();
+                cmd->arguments = vector_init();
+                vector_append(vector, cmd);
+                release(cmd);
+                state = PROGRAM;
+                continue;
             }
-            continue;
+            if (c == '&') {
+            }
         }
         if ((c == '\"' || c == '\'') && !isEscaped) {
             inString = !inString;
@@ -52,6 +70,16 @@ parse_cmd(String *line) {
                 String *argument = (String *)cmd->arguments->objs[cmd->arguments->count - 1];
                 str_append_char(argument, c);
                 break;
+            }
+        }
+    }
+
+    for (int i = 0; i < vector->count; i++) {
+        Command *cmd = (Command *)vector->objs[i];
+        for (int j = cmd->arguments->count - 1; j >= 0; j--) {
+            String *argument = (String *)cmd->arguments->objs[j];
+            if (argument->len == 0) {
+                vector_remove(cmd->arguments, j);
             }
         }
     }
