@@ -2,10 +2,10 @@ CC=cc
 CFLAGS= -std=c11 -Wall
 
 
-all: gshell
+all: shellIpass
 
-gshell: structures.o vector.o list.o refcnt.o str.o htable.o parser.o main.o
-	$(CC) $(CFLAGS) *.o -o gshell
+shellIpass: structures.o vector.o list.o refcnt.o str.o htable.o parser.o main.o
+	$(CC) $(CFLAGS) *.o -o shellIpass
 
 parser.o: src/parser/parser.c
 	$(CC) $(CFLAGS) -c src/parser/parser.c
@@ -33,4 +33,4 @@ main.o: src/main.c
 
 clean:
 	rm -rf *.o
-	rm gshell
+	rm shellIpass
