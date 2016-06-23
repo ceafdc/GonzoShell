@@ -3,15 +3,25 @@
 
 #include "../structures/structures.h"
 
+typedef enum {
+    FOREGROUND,
+    BACKGROUND
+} GroundMode;
+
 typedef struct {
-    String *program;
-    Vector *arguments;
+    Vector *commands;
     FILE *fin;
     FILE *fout;
     FILE *ferr;
+    GroundMode ground;
+} Pipeline;
+
+typedef struct {
+    String *program;
+    Vector *arguments;
 } Command;
 
-Vector * parse_cmd(String *command);
-char **genargv(Command *cmd);
+Pipeline * parse_cmd(String *line);
+char ** genargv(Command *cmd);
 
 #endif

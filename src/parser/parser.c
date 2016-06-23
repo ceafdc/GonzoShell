@@ -1,14 +1,19 @@
 #include "parser.h"
 
 void cmd_free(void *obj);
+void pipeline_free(void *obj);
 
 typedef enum {
     PROGRAM = 0,
-    ARGUMENTS, } ParseState;
+    ARGUMENTS
+} ParseState;
 
-Vector *
+Pipeline *
 parse_cmd(String *line) {
+    Pipeline *pipeline = (Pipeline *)alloc(sizeof(Pipeline), pipeline_free);
+    pipeline->ground = FOREGROUND;
     Vector *vector = vector_init();
+    pipeline->commands = vector;
     Command *cmd = alloc(sizeof(Command), cmd_free);
     vector_append(vector, cmd);
     release(cmd);
@@ -51,6 +56,7 @@ parse_cmd(String *line) {
                 continue;
             }
             if (c == '&') {
+                pipeline->ground = BACKGROUND;
             }
         }
         if ((c == '\"' || c == '\'') && !isEscaped) {
@@ -83,7 +89,7 @@ parse_cmd(String *line) {
             }
         }
     }
-    return vector;
+    return pipeline;
 }
 
 
@@ -101,6 +107,13 @@ genargv(Command *cmd) {
 
     return argv;
 }
+
+void
+pipeline_free(void *obj) {
+    Pipeline *pipeline = (Pipeline *)obj;
+    release(pipeline->commands);
+}
+
 
 void
 cmd_free(void *obj) {

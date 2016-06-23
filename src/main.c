@@ -38,7 +38,9 @@ main (int argc, char ** argv) {
 
         printf("%s", head->string);
         String *line = str_from_stdin();
-        Vector *commands = parse_cmd(line);
+        Pipeline *pipeline = parse_cmd(line);
+        release(line);
+        Vector *commands = pipeline->commands;
 
         for (int i = 0; i < commands->count; i++) {
             Command *cmd = (Command *)commands->objs[i];
@@ -60,13 +62,15 @@ main (int argc, char ** argv) {
             fprintf(stderr, "Command %s not found\n", cmdargv[0]);
             release(cmd);
             free(cmdargv);
+            exit(EXIT_FAILURE);
         } else { // parent
-            int status;
-            wait(&status);
+            if (pipeline->ground == FOREGROUND) {
+                int status;
+                wait(&status);
+            }
         }
 
-        release(line);
-        release(commands);
+        release(pipeline);
     }
     return EXIT_SUCCESS;
 }
